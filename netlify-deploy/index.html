@@ -1,0 +1,1382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course Studio</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root{--bg:#0a0c10;--sf:#111318;--sf2:#16191f;--bdr:rgba(255,255,255,.07);--ac:#4f7cff;--ac2:#a855f7;--tx:#e8ecf4;--mu:rgba(232,236,244,.42);--r:13px;--sw:220px;--safety:#f97316;--tech:#22d3ee;--biz:#a855f7;}
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+    html,body{height:100%;overflow:hidden;}
+    body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--tx);display:flex;flex-direction:column;}
+
+    /* TOPBAR */
+    .topbar{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;flex-shrink:0;border-bottom:1px solid var(--bdr);background:rgba(10,12,16,.96);z-index:200;}
+    .brand{display:flex;align-items:center;gap:10px;}
+    .brand-icon{width:28px;height:28px;background:linear-gradient(135deg,var(--ac),var(--ac2));border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+    .brand-name{font-family:'Syne',sans-serif;font-size:16px;font-weight:800;}
+    .brand-name span{color:var(--ac);}
+
+    /* LAYOUT */
+    .app-body{display:flex;flex:1;overflow:hidden;}
+
+    /* SIDEBAR */
+    .sidebar{width:var(--sw);flex-shrink:0;border-right:1px solid var(--bdr);background:var(--sf);display:flex;flex-direction:column;overflow-y:auto;padding:14px 0;}
+    .sidebar::-webkit-scrollbar{width:0;}
+    .sb-label{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:1.2px;color:var(--mu);padding:10px 18px 5px;}
+    .sb-item{display:flex;align-items:center;gap:10px;padding:9px 18px;font-size:13px;font-weight:500;color:var(--mu);cursor:pointer;border-left:2px solid transparent;transition:all .14s;user-select:none;}
+    .sb-item:hover{background:rgba(255,255,255,.04);color:var(--tx);}
+    .sb-item.active{color:var(--tx);background:rgba(79,124,255,.08);border-left-color:var(--ac);}
+    .sb-item i{width:15px;text-align:center;font-size:12px;opacity:.65;}
+    .sb-item.active i{opacity:1;color:var(--ac);}
+    .sb-divider{height:1px;background:var(--bdr);margin:8px 0;}
+    .sb-badge{margin-left:auto;font-size:10px;font-weight:700;background:rgba(79,124,255,.14);color:var(--ac);padding:1px 7px;border-radius:999px;}
+    .sb-badge.o{background:rgba(249,115,22,.14);color:var(--safety);}
+    .sb-badge.p{background:rgba(168,85,247,.14);color:var(--ac2);}
+
+    /* MAIN */
+    .main{flex:1;overflow-y:auto;overflow-x:hidden;}
+    .main::-webkit-scrollbar{width:4px;}
+    .main::-webkit-scrollbar-thumb{background:rgba(255,255,255,.07);border-radius:4px;}
+    .page{display:none;padding:28px 32px;}
+    .page.active{display:block;}
+    .page-hero{margin-bottom:28px;}
+    .page-hero h2{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;letter-spacing:-.3px;margin-bottom:4px;}
+    .page-hero p{color:var(--mu);font-size:14px;}
+
+    /* BUTTONS */
+    .btn{cursor:pointer;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;padding:8px 15px;border-radius:9px;border:1px solid var(--bdr);background:rgba(255,255,255,.05);color:var(--tx);display:inline-flex;align-items:center;gap:6px;transition:all .14s;}
+    .btn:hover{background:rgba(255,255,255,.09);}
+    .btn.p{background:var(--ac);border-color:var(--ac);color:#fff;}
+    .btn.p:hover{filter:brightness(1.1);}
+    .btn:disabled{opacity:.4;cursor:not-allowed;filter:none;}
+
+    .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:32px;}
+
+    /* CATEGORY */
+    .cat-sec{margin-bottom:40px;}
+    .cat-hdr{display:flex;align-items:center;gap:9px;margin-bottom:14px;}
+    .cdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+    .cdot.s{background:var(--safety);box-shadow:0 0 0 3px rgba(249,115,22,.14);}
+    .cdot.t{background:var(--tech);  box-shadow:0 0 0 3px rgba(34,211,238,.14);}
+    .cdot.b{background:var(--biz);   box-shadow:0 0 0 3px rgba(168,85,247,.14);}
+    .clbl{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;}
+    .clbl.s{color:var(--safety);} .clbl.t{color:var(--tech);} .clbl.b{color:var(--biz);}
+    .ccount{margin-left:auto;font-size:11px;color:var(--mu);background:rgba(255,255,255,.05);padding:2px 8px;border-radius:999px;border:1px solid var(--bdr);}
+
+    /* DECK ROW */
+    .deck-row{display:flex;gap:13px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none;}
+    .deck-row::-webkit-scrollbar{display:none;}
+    .deck-card{flex:0 0 236px;border:1px solid var(--bdr);border-radius:var(--r);background:var(--sf2);overflow:hidden;cursor:pointer;transition:transform .2s,border-color .18s,box-shadow .2s;}
+    .deck-card:hover{transform:translateY(-3px);border-color:rgba(255,255,255,.13);box-shadow:0 10px 30px rgba(0,0,0,.4);}
+    .dc-thumb{height:116px;background-size:cover;background-position:center;position:relative;}
+    .dc-thumb::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,rgba(17,19,24,.88));}
+    .dc-ov{position:absolute;bottom:7px;left:9px;right:9px;z-index:1;display:flex;gap:5px;}
+    .dc-pill{font-size:10px;padding:2px 7px;border-radius:999px;backdrop-filter:blur(6px);}
+    .dc-pill.cnt{background:rgba(0,0,0,.5);color:rgba(255,255,255,.7);}
+    .dc-pill.vid{background:rgba(79,124,255,.65);color:#fff;}
+    .dc-body{padding:11px;}
+    .dc-title{font-family:'Syne',sans-serif;font-size:13px;font-weight:700;margin-bottom:3px;}
+    .dc-sub{font-size:11px;color:var(--mu);margin-bottom:9px;}
+    .dc-footer{display:flex;align-items:center;justify-content:space-between;}
+    .dc-open{font-size:11px;font-weight:600;color:var(--ac);display:flex;align-items:center;gap:4px;}
+    .deck-card.add{border-style:dashed;border-color:rgba(255,255,255,.09);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;height:196px;color:var(--mu);}
+    .deck-card.add:hover{border-color:var(--ac);color:var(--ac);background:rgba(79,124,255,.04);}
+    .deck-card.add i{font-size:19px;}
+    .deck-card.add span{font-size:12px;font-weight:500;}
+
+    /* BILLING / STATS */
+    .stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:28px;}
+    .stat-card{background:var(--sf2);border:1px solid var(--bdr);border-radius:var(--r);padding:18px;}
+    .stat-card .sl{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.7px;margin-bottom:7px;}
+    .stat-card .sv{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;}
+    .stat-card .ss{font-size:12px;color:var(--mu);margin-top:3px;}
+    .stat-card.ac{background:linear-gradient(135deg,rgba(79,124,255,.1),rgba(168,85,247,.07));border-color:rgba(79,124,255,.18);}
+    .ub-wrap{margin-bottom:20px;}
+    .ub-lbl{display:flex;justify-content:space-between;font-size:12px;color:var(--mu);margin-bottom:5px;}
+    .ub{height:5px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden;}
+    .ub-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,var(--ac),var(--ac2));}
+    .inv-row{display:flex;align-items:center;padding:11px 0;border-bottom:1px solid var(--bdr);font-size:13px;gap:12px;}
+    .inv-row:last-child{border:none;}
+    .inv-date{color:var(--mu);min-width:100px;}
+    .inv-desc{flex:1;}
+    .inv-amt{font-weight:600;}
+    .inv-badge{font-size:10px;padding:2px 8px;border-radius:999px;background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.18);}
+
+    /* PROJECTS */
+    .proj-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;}
+    .proj-card{background:var(--sf2);border:1px solid var(--bdr);border-radius:var(--r);padding:18px;cursor:pointer;transition:all .14s;}
+    .proj-card:hover{border-color:rgba(255,255,255,.12);transform:translateY(-2px);}
+    .proj-icon{width:38px;height:38px;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:17px;margin-bottom:11px;}
+    .proj-name{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:3px;}
+    .proj-meta{font-size:12px;color:var(--mu);}
+    .proj-ft{display:flex;align-items:center;justify-content:space-between;margin-top:12px;padding-top:10px;border-top:1px solid var(--bdr);font-size:12px;color:var(--mu);}
+
+    /* SETTINGS */
+    .set-sec{max-width:500px;margin-bottom:28px;}
+    .set-sec h3{font-family:'Syne',sans-serif;font-size:14px;font-weight:700;margin-bottom:14px;padding-bottom:9px;border-bottom:1px solid var(--bdr);}
+    .field{margin-bottom:14px;}
+    .field label{display:block;font-size:11px;font-weight:600;color:var(--mu);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;}
+    .field input,.field select,.field textarea{width:100%;padding:9px 12px;border-radius:9px;border:1px solid var(--bdr);background:rgba(0,0,0,.2);color:var(--tx);font-family:'DM Sans',sans-serif;font-size:13px;outline:none;transition:border-color .14s;}
+    .field input:focus,.field textarea:focus{border-color:var(--ac);}
+
+    /* MODALS */
+    .modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:400;display:flex;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px);}
+    .modal{background:var(--sf);border:1px solid var(--bdr);border-radius:16px;padding:26px;max-width:580px;width:100%;max-height:85vh;overflow-y:auto;}
+    .modal h3{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:6px;}
+    .modal>p{color:var(--mu);font-size:13px;margin-bottom:16px;}
+    .modal-acts{display:flex;gap:8px;justify-content:flex-end;margin-top:18px;}
+    .chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0 14px;}
+    .chip{cursor:pointer;font-size:11px;padding:4px 10px;border-radius:999px;border:1px solid var(--bdr);background:rgba(255,255,255,.04);color:var(--mu);transition:all .13s;}
+    .chip:hover{border-color:var(--ac);color:var(--ac);}
+
+    /* ═══ FULLSCREEN CAROUSEL ═══════════════════════════ */
+    #deckCarousel{
+      position:fixed;inset:0;z-index:500;
+      background:transparent;
+      display:none;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+    }
+    #deckCarousel::before{
+      content:'';position:absolute;inset:0;
+      background:rgba(5,6,9,.97);
+      opacity:0;transition:opacity .4s ease;z-index:0;
+    }
+    #deckCarousel.open::before{opacity:1;}
+    #deckCarousel > *{position:relative;z-index:1;}
+
+    .car-topbar{
+      position:absolute;top:0;left:0;right:0;z-index:10;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:14px 26px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      background:rgba(5,6,9,.8);backdrop-filter:blur(10px);
+    }
+    .car-topbar-info h3{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;}
+    .car-topbar-info p{font-size:12px;color:var(--mu);}
+    .car-acts{display:flex;gap:7px;}
+
+    /* ── TRACK: holds all cards side by side ─────────── */
+    .car-body{
+      width:100%;
+      display:flex;align-items:center;justify-content:center;
+      margin-top:60px;
+      padding-bottom:8px;
+      position:relative;
+    }
+
+    .car-track-outer{
+      width:460px; /* = card width — clips neighbours */
+      position:relative;
+      overflow:visible;
+    }
+
+    .car-track{
+      display:flex;
+      align-items:center;
+      /* JS sets transform: translateX */
+      transition:transform .42s cubic-bezier(.4,0,.2,1);
+      will-change:transform;
+    }
+
+    /* every card in the track */
+    .car-card{
+      flex:0 0 420px;
+      width:420px;
+      margin:0 20px;
+      border-radius:16px;
+      border:1px solid rgba(255,255,255,.1);
+      background:var(--sf);
+      overflow:hidden;
+      box-shadow:0 24px 70px rgba(0,0,0,.7);
+      transition:transform .42s cubic-bezier(.4,0,.2,1), opacity .42s, box-shadow .42s;
+      cursor:pointer;
+      user-select:none;
+    }
+    /* side cards are smaller and dimmer */
+    .car-card.side{
+      transform:scale(.88);
+      opacity:.45;
+      box-shadow:0 10px 30px rgba(0,0,0,.5);
+    }
+    .car-card.far{
+      transform:scale(.78);
+      opacity:.2;
+      box-shadow:none;
+    }
+    .car-card img,.car-card video{width:100%;height:190px;object-fit:cover;display:block;}
+    .car-card-body{padding:16px 20px 20px;}
+    .car-num{font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+    .car-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:7px;line-height:1.2;}
+    .car-content{color:var(--mu);font-size:13px;line-height:1.6;}
+    .car-bullets{margin:9px 0;padding-left:16px;color:var(--mu);font-size:12px;line-height:1.8;}
+    .car-narration{margin-top:12px;padding:10px 13px;border-radius:8px;border:1px solid rgba(255,255,255,.07);background:rgba(255,255,255,.03);font-size:12px;color:var(--mu);font-style:italic;}
+    .car-quiz{margin-top:12px;padding:12px;border-radius:9px;border:1px solid rgba(168,85,247,.2);background:rgba(168,85,247,.05);}
+    .car-quiz .ql{font-size:10px;color:var(--ac2);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;}
+    .car-quiz .qt{font-size:13px;font-weight:600;margin-bottom:9px;}
+    .car-opt{padding:7px 12px;margin:4px 0;border-radius:7px;border:1px solid var(--bdr);font-size:12px;cursor:pointer;transition:all .13s;}
+    .car-opt:hover{border-color:var(--ac);background:rgba(79,124,255,.07);}
+    .car-opt.correct{border-color:#22c55e;background:rgba(34,197,94,.08);color:#4ade80;}
+    .car-vbtn{display:inline-flex;align-items:center;gap:5px;font-size:11px;padding:4px 10px;border-radius:999px;background:rgba(79,124,255,.1);border:1px solid rgba(79,124,255,.2);color:var(--ac);cursor:pointer;margin-top:8px;transition:all .13s;}
+    .car-vbtn:hover{background:rgba(79,124,255,.2);}
+
+    /* arrows */
+    .car-arrow{
+      position:absolute;top:50%;transform:translateY(-50%);
+      width:42px;height:42px;border-radius:50%;
+      background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+      color:var(--tx);font-size:14px;display:flex;align-items:center;justify-content:center;
+      cursor:pointer;transition:all .13s;z-index:20;
+    }
+    .car-arrow:hover{background:rgba(255,255,255,.14);}
+    .car-arrow:disabled{opacity:.2;cursor:not-allowed;}
+    .car-arrow.prev{left:-58px;}
+    .car-arrow.next{right:-58px;}
+
+    /* dots */
+    .car-dots{display:flex;gap:6px;justify-content:center;margin-top:20px;padding-bottom:20px;}
+    .cdot-el{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.15);cursor:pointer;transition:all .2s;}
+    .cdot-el.active{background:var(--ac);width:16px;border-radius:999px;}
+
+    /* entry animation */
+    @keyframes carIn{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
+    #deckCarousel.open .car-body{animation:carIn .35s .12s ease both;}
+    #deckCarousel.open .car-topbar{animation:carIn .28s .04s ease both;}
+    #deckCarousel.open .car-dots{animation:carIn .28s .22s ease both;}
+
+    /* FLASH */
+    #sf{position:fixed;bottom:18px;right:18px;background:var(--sf);border:1px solid var(--bdr);border-radius:9px;padding:9px 15px;font-size:13px;z-index:600;opacity:0;transform:translateY(5px);transition:all .22s;pointer-events:none;}
+    #sf.show{opacity:1;transform:translateY(0);}
+    #sf.ok{border-color:#22c55e;}
+    #sf.err{border-color:#ef4444;}
+
+    ::-webkit-scrollbar{width:4px;}
+    ::-webkit-scrollbar-thumb{background:rgba(255,255,255,.08);border-radius:4px;}
+
+    /* ── EDIT MODAL ─────────────────────────────────── */
+    .edit-modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:700;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
+    .edit-modal{background:var(--sf);border:1px solid var(--bdr);border-radius:18px;padding:28px;width:520px;max-width:95vw;max-height:85vh;overflow-y:auto;}
+    .edit-modal h3{font-family:'Syne',sans-serif;font-size:17px;font-weight:800;margin-bottom:18px;}
+    .edit-field{margin-bottom:14px;}
+    .edit-field label{font-size:11px;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;display:block;margin-bottom:5px;}
+    .edit-field textarea{width:100%;background:var(--bg);border:1px solid var(--bdr);border-radius:9px;color:var(--tx);padding:10px 12px;font-size:13px;line-height:1.5;resize:vertical;min-height:60px;font-family:inherit;box-sizing:border-box;}
+    .edit-field textarea:focus{outline:none;border-color:var(--ac);}
+    .edit-regen-row{display:flex;gap:8px;margin-top:4px;}
+    .edit-regen-btn{font-size:11px;padding:4px 10px;border-radius:999px;background:rgba(79,124,255,.1);border:1px solid rgba(79,124,255,.2);color:var(--ac);cursor:pointer;transition:all .13s;display:inline-flex;align-items:center;gap:4px;}
+    .edit-regen-btn:hover{background:rgba(79,124,255,.2);}
+    .edit-regen-btn:disabled{opacity:.4;cursor:not-allowed;}
+    .edit-actions{display:flex;gap:8px;margin-top:18px;justify-content:flex-end;}
+
+    /* ── PLAYBACK OVERLAY ───────────────────────────── */
+    #playbackOverlay{position:fixed;inset:0;background:#000;z-index:800;display:none;flex-direction:column;}
+    #playbackOverlay.active{display:flex;}
+    #pbMedia{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+    #pbMediaImg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;}
+    #pbGradient{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,.8) 0%,rgba(0,0,0,.2) 50%,rgba(0,0,0,.3) 100%);}
+    #pbContent{position:absolute;bottom:0;left:0;right:0;padding:32px 48px;z-index:10;}
+    #pbSlideNum{font-size:11px;color:rgba(255,255,255,.5);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;}
+    #pbTitle{font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:#fff;margin-bottom:10px;line-height:1.2;}
+    #pbBody{font-size:16px;color:rgba(255,255,255,.85);line-height:1.6;max-width:700px;margin-bottom:16px;}
+    #pbCaption{font-size:15px;color:rgba(255,255,255,.7);font-style:italic;min-height:24px;border-left:3px solid var(--ac);padding-left:12px;margin-bottom:20px;transition:all .2s;}
+    #pbProgress{width:100%;height:3px;background:rgba(255,255,255,.15);border-radius:999px;margin-bottom:16px;}
+    #pbProgressBar{height:100%;background:var(--ac);border-radius:999px;transition:width .5s linear;width:0%;}
+    #pbControls{display:flex;align-items:center;gap:12px;}
+    .pb-btn{width:38px;height:38px;border-radius:50%;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.15);color:#fff;font-size:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .13s;}
+    .pb-btn:hover{background:rgba(255,255,255,.2);}
+    #pbCloseBtn{position:absolute;top:20px;right:24px;z-index:20;}
+  </style>
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-icon">🎓</div>
+    <span class="brand-name">Course<span>Studio</span></span>
+  </div>
+  <button class="btn p" onclick="showGenerateModal()"><i class="fas fa-wand-magic-sparkles"></i> Generate Course</button>
+</header>
+
+<div class="app-body">
+
+  <!-- SIDEBAR -->
+  <nav class="sidebar">
+    <div class="sb-label">Platform</div>
+    <div class="sb-item active" onclick="nav('library',this)"><i class="fas fa-layer-group"></i> Library</div>
+    <div class="sb-item" onclick="nav('projects',this)"><i class="fas fa-folder-open"></i> Projects <span class="sb-badge">3</span></div>
+    <div class="sb-item" onclick="nav('runway',this)"><i class="fas fa-film"></i> Runway Video</div>
+
+    <div class="sb-divider"></div>
+    <div class="sb-label">Account</div>
+    <div class="sb-item" onclick="nav('billing',this)"><i class="fas fa-credit-card"></i> Billing</div>
+    <div class="sb-item" onclick="nav('usage',this)"><i class="fas fa-chart-bar"></i> Usage</div>
+    <div class="sb-item" onclick="nav('members',this)"><i class="fas fa-users"></i> Members</div>
+
+    <div class="sb-divider"></div>
+    <div class="sb-label">Config</div>
+    <div class="sb-item" onclick="nav('apikeys',this)"><i class="fas fa-key"></i> API Keys</div>
+    <div class="sb-item" onclick="nav('settings',this)"><i class="fas fa-gear"></i> Settings</div>
+    <div class="sb-item" onclick="window.open('https://docs.runwayml.com','_blank')">
+      <i class="fas fa-book"></i> Docs <i class="fas fa-arrow-up-right-from-square" style="font-size:9px;margin-left:auto;opacity:.35;"></i>
+    </div>
+  </nav>
+
+  <main class="main">
+
+    <!-- LIBRARY -->
+    <div id="pg-library" class="page active">
+      <div class="page-hero"><h2>Training Library</h2><p>Click any deck to open it full screen.</p></div>
+      <div class="toolbar">
+        <button class="btn p" onclick="showGenerateModal()"><i class="fas fa-wand-magic-sparkles"></i> AI Generate</button>
+        <button class="btn" onclick="generateNewCourse()"><i class="fas fa-plus"></i> Quick Add</button>
+        <button class="btn" onclick="uploadCourse()"><i class="fas fa-upload"></i> Upload</button>
+      </div>
+
+      <div class="cat-sec">
+        <div class="cat-hdr"><div class="cdot s"></div><span class="clbl s">Safety Training</span><span class="ccount">2 decks</span></div>
+        <div class="deck-row">
+          <div class="deck-card" onclick="openCarousel('safety',0)">
+            <div class="dc-thumb" style="background-image:url('https://images.unsplash.com/photo-1497366216548-37526070297c?w=500&h=230&fit=crop')"><div class="dc-ov"><span class="dc-pill cnt"><i class="fas fa-layer-group"></i> 8 slides</span><span class="dc-pill vid"><i class="fas fa-video"></i> Video</span></div></div>
+            <div class="dc-body"><div class="dc-title">Workplace Safety</div><div class="dc-sub">Essential safety procedures</div><div class="dc-footer"><span class="dc-open"><i class="fas fa-play"></i> Open Deck</span><div class="cdot s" style="box-shadow:none;"></div></div></div>
+          </div>
+          <div class="deck-card" onclick="openCarousel('safety',1)">
+            <div class="dc-thumb" style="background-image:url('https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=500&h=230&fit=crop')"><div class="dc-ov"><span class="dc-pill cnt"><i class="fas fa-layer-group"></i> 6 slides</span></div></div>
+            <div class="dc-body"><div class="dc-title">PPE Guidelines</div><div class="dc-sub">Protective equipment standards</div><div class="dc-footer"><span class="dc-open"><i class="fas fa-play"></i> Open Deck</span><div class="cdot s" style="box-shadow:none;"></div></div></div>
+          </div>
+          <div class="deck-card add" onclick="addDeckToCategory('safety')"><i class="fas fa-plus"></i><span>Add Safety Deck</span></div>
+        </div>
+      </div>
+
+      <div class="cat-sec">
+        <div class="cat-hdr"><div class="cdot t"></div><span class="clbl t">Technical Training</span><span class="ccount">1 deck</span></div>
+        <div class="deck-row">
+          <div class="deck-card" onclick="openCarousel('technical',0)">
+            <div class="dc-thumb" style="background-image:url('https://images.unsplash.com/photo-1562774053-701939374585?w=500&h=230&fit=crop')"><div class="dc-ov"><span class="dc-pill cnt"><i class="fas fa-layer-group"></i> 12 slides</span><span class="dc-pill vid"><i class="fas fa-video"></i> Video</span></div></div>
+            <div class="dc-body"><div class="dc-title">Software Training</div><div class="dc-sub">Professional software skills</div><div class="dc-footer"><span class="dc-open"><i class="fas fa-play"></i> Open Deck</span><div class="cdot t" style="box-shadow:none;"></div></div></div>
+          </div>
+          <div class="deck-card add" onclick="addDeckToCategory('technical')"><i class="fas fa-plus"></i><span>Add Technical Deck</span></div>
+        </div>
+      </div>
+
+      <div class="cat-sec">
+        <div class="cat-hdr"><div class="cdot b"></div><span class="clbl b">Business Skills</span><span class="ccount">2 decks</span></div>
+        <div class="deck-row">
+          <div class="deck-card" onclick="openCarousel('business',0)">
+            <div class="dc-thumb" style="background-image:url('https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=500&h=230&fit=crop')"><div class="dc-ov"><span class="dc-pill cnt"><i class="fas fa-layer-group"></i> 10 slides</span><span class="dc-pill vid"><i class="fas fa-video"></i> Video</span></div></div>
+            <div class="dc-body"><div class="dc-title">Customer Service</div><div class="dc-sub">Excellence in customer relations</div><div class="dc-footer"><span class="dc-open"><i class="fas fa-play"></i> Open Deck</span><div class="cdot b" style="box-shadow:none;"></div></div></div>
+          </div>
+          <div class="deck-card" onclick="openCarousel('business',1)">
+            <div class="dc-thumb" style="background-image:url('https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=500&h=230&fit=crop')"><div class="dc-ov"><span class="dc-pill cnt"><i class="fas fa-layer-group"></i> 7 slides</span></div></div>
+            <div class="dc-body"><div class="dc-title">Sales Training</div><div class="dc-sub">Advanced sales techniques</div><div class="dc-footer"><span class="dc-open"><i class="fas fa-play"></i> Open Deck</span><div class="cdot b" style="box-shadow:none;"></div></div></div>
+          </div>
+          <div class="deck-card add" onclick="addDeckToCategory('business')"><i class="fas fa-plus"></i><span>Add Business Deck</span></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- PROJECTS -->
+    <div id="pg-projects" class="page">
+      <div class="page-hero"><h2>Projects</h2><p>Organise decks into projects for different teams or clients.</p></div>
+      <div style="margin-bottom:18px;"><button class="btn p"><i class="fas fa-plus"></i> New Project</button></div>
+      <div class="proj-grid">
+        <div class="proj-card"><div class="proj-icon" style="background:rgba(249,115,22,.12);">🏭</div><div class="proj-name">Manufacturing Onboarding</div><div class="proj-meta">Updated 2 days ago</div><div class="proj-ft"><span><i class="fas fa-layer-group"></i> 4 decks · 38 slides</span><span class="sb-badge o">Active</span></div></div>
+        <div class="proj-card"><div class="proj-icon" style="background:rgba(79,124,255,.12);">💼</div><div class="proj-name">Sales Enablement Q1</div><div class="proj-meta">Updated 5 days ago</div><div class="proj-ft"><span><i class="fas fa-layer-group"></i> 2 decks · 17 slides</span><span class="sb-badge">Active</span></div></div>
+        <div class="proj-card"><div class="proj-icon" style="background:rgba(168,85,247,.12);">🔐</div><div class="proj-name">Compliance 2025</div><div class="proj-meta">Updated 12 days ago</div><div class="proj-ft"><span><i class="fas fa-layer-group"></i> 3 decks · 24 slides</span><span class="sb-badge p">Review</span></div></div>
+        <div class="proj-card" style="border-style:dashed;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;color:var(--mu);min-height:140px;"><i class="fas fa-plus" style="font-size:18px;"></i><span style="font-size:13px;font-weight:500;">New Project</span></div>
+      </div>
+    </div>
+
+    <!-- RUNWAY -->
+    <div id="pg-runway" class="page">
+      <div class="page-hero"><h2>Runway Video</h2><p>Generate AI videos from text prompts.</p></div>
+      <div style="max-width:540px;">
+        <div class="field"><label>Video Prompt</label><textarea id="rwPrompt" rows="4" placeholder="A clean 2D training animation inside a processing plant. Camera slowly pans. Worker in hi-vis points to a safety sign..."></textarea></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <div class="field" style="flex:1;min-width:90px;margin:0;"><label>Duration</label><input type="number" id="rwDuration" value="5" min="3" max="10"/></div>
+          <div class="field" style="flex:1;min-width:100px;margin:0;"><label>Ratio</label><select id="rwRatio"><option value="1280:720" selected>16:9 (1280×720)</option><option value="720:1280">9:16 (720×1280)</option><option value="1024:1024">1:1 (1024×1024)</option></select></div>
+          <div class="field" style="flex:1;min-width:90px;margin:0;"><label>Model</label><input type="text" id="rwModel" value="gen4.5"/></div>
+        </div>
+        <div id="rwStatus" style="display:none;margin-top:12px;padding:11px 13px;border-radius:9px;border:1px solid var(--bdr);background:rgba(0,0,0,.15);font-size:13px;color:var(--mu);"></div>
+        <video id="rwResult" controls style="display:none;width:100%;border-radius:9px;margin-top:12px;"></video>
+        <div style="margin-top:14px;"><button class="btn p" id="rwBtn" onclick="runRunwayPage()"><i class="fas fa-film"></i> Generate Video</button></div>
+      </div>
+    </div>
+
+    <!-- BILLING -->
+    <div id="pg-billing" class="page">
+      <div class="page-hero"><h2>Billing</h2><p>Manage subscription and invoices.</p></div>
+      <div class="stat-grid">
+        <div class="stat-card ac"><div class="sl">Current Plan</div><div class="sv" style="font-size:18px;">Pro</div><div class="ss">$29/mo · renews Feb 28</div></div>
+        <div class="stat-card"><div class="sl">Courses Generated</div><div class="sv">47</div><div class="ss">this billing period</div></div>
+        <div class="stat-card"><div class="sl">Video Minutes</div><div class="sv">12.4</div><div class="ss">of 60 min included</div></div>
+        <div class="stat-card"><div class="sl">Voice Characters</div><div class="sv">48k</div><div class="ss">of 100k included</div></div>
+      </div>
+      <div style="max-width:480px;">
+        <p style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;">Usage This Period</p>
+        <div class="ub-wrap"><div class="ub-lbl"><span>Video Minutes</span><span>12.4 / 60</span></div><div class="ub"><div class="ub-fill" style="width:21%"></div></div></div>
+        <div class="ub-wrap"><div class="ub-lbl"><span>Voice Characters</span><span>48k / 100k</span></div><div class="ub"><div class="ub-fill" style="width:48%"></div></div></div>
+        <div class="ub-wrap"><div class="ub-lbl"><span>AI Generations</span><span>47 / 200</span></div><div class="ub"><div class="ub-fill" style="width:24%"></div></div></div>
+        <p style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;margin:20px 0 12px;">Invoice History</p>
+        <div class="inv-row"><span class="inv-date">Jan 28 2026</span><span class="inv-desc">Pro Plan — January</span><span class="inv-amt">$29.00</span><span class="inv-badge">Paid</span></div>
+        <div class="inv-row"><span class="inv-date">Dec 28 2025</span><span class="inv-desc">Pro Plan — December</span><span class="inv-amt">$29.00</span><span class="inv-badge">Paid</span></div>
+        <div class="inv-row"><span class="inv-date">Nov 28 2025</span><span class="inv-desc">Pro Plan — November</span><span class="inv-amt">$29.00</span><span class="inv-badge">Paid</span></div>
+      </div>
+    </div>
+
+    <!-- USAGE -->
+    <div id="pg-usage" class="page">
+      <div class="page-hero"><h2>Usage</h2><p>Track API and platform usage.</p></div>
+      <div class="stat-grid" style="max-width:400px;margin-bottom:24px;">
+        <div class="stat-card"><div class="sl">API Calls (30d)</div><div class="sv">1,284</div></div>
+        <div class="stat-card"><div class="sl">Avg Response</div><div class="sv">2.1s</div></div>
+      </div>
+      <div style="max-width:480px;">
+        <p style="font-family:'Syne',sans-serif;font-size:12px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.8px;margin-bottom:14px;">By Service</p>
+        <div class="ub-wrap"><div class="ub-lbl"><span>Claude (course gen)</span><span>842 calls</span></div><div class="ub"><div class="ub-fill" style="width:65%"></div></div></div>
+        <div class="ub-wrap"><div class="ub-lbl"><span>ElevenLabs (TTS)</span><span>310 calls</span></div><div class="ub"><div class="ub-fill" style="width:24%;background:linear-gradient(90deg,var(--ac2),#ec4899)"></div></div></div>
+        <div class="ub-wrap"><div class="ub-lbl"><span>Runway (video)</span><span>132 calls</span></div><div class="ub"><div class="ub-fill" style="width:10%;background:linear-gradient(90deg,var(--safety),#fbbf24)"></div></div></div>
+      </div>
+    </div>
+
+    <!-- MEMBERS -->
+    <div id="pg-members" class="page">
+      <div class="page-hero"><h2>Members</h2><p>Manage workspace access.</p></div>
+      <div style="margin-bottom:18px;"><button class="btn p"><i class="fas fa-user-plus"></i> Invite Member</button></div>
+      <div style="max-width:500px;">
+        <div class="inv-row"><span style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--ac),var(--ac2));display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">JD</span><span class="inv-desc" style="margin-left:10px;">Jake D. <span style="color:var(--mu);font-size:12px;">· Owner</span></span><span class="inv-badge">Admin</span></div>
+        <div class="inv-row"><span style="width:34px;height:34px;border-radius:50%;background:rgba(249,115,22,.2);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--safety);flex-shrink:0;">SM</span><span class="inv-desc" style="margin-left:10px;">Sarah M. <span style="color:var(--mu);font-size:12px;">· Editor</span></span><span class="inv-badge" style="background:rgba(255,255,255,.06);color:var(--mu);border-color:var(--bdr);">Editor</span></div>
+        <div class="inv-row"><span style="width:34px;height:34px;border-radius:50%;background:rgba(168,85,247,.2);display:inline-flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--ac2);flex-shrink:0;">TK</span><span class="inv-desc" style="margin-left:10px;">Tom K. <span style="color:var(--mu);font-size:12px;">· Viewer</span></span><span class="inv-badge" style="background:rgba(255,255,255,.06);color:var(--mu);border-color:var(--bdr);">Viewer</span></div>
+      </div>
+    </div>
+
+    <!-- API KEYS -->
+    <div id="pg-apikeys" class="page">
+      <div class="page-hero"><h2>API Keys</h2><p>Saved locally in your browser.</p></div>
+      <div class="set-sec">
+        <h3>Backend (Railway)</h3>
+        <div class="field">
+          <label>Railway Backend URL</label>
+          <input type="text" id="railwayUrl" placeholder="https://your-app.up.railway.app"/>
+          <div style="font-size:11px;color:var(--mu);margin-top:5px;">
+            Deploy the <code style="background:rgba(255,255,255,.07);padding:1px 5px;border-radius:4px;">railway-backend/</code> folder to <a href="https://railway.app" target="_blank" style="color:var(--ac);text-decoration:none;">railway.app</a> then paste your URL here.
+            Enables long-running course + video generation without timeout errors.
+            <span id="railwayStatus" style="margin-left:8px;"></span>
+          </div>
+        </div>
+        <button class="btn" onclick="testRailway()" style="margin-bottom:18px;"><i class="fas fa-plug"></i> Test Connection</button>
+      </div>
+      <div class="set-sec">
+        <h3>Service Keys</h3>
+        <div style="font-size:12px;color:var(--mu);margin-bottom:14px;padding:10px 12px;background:rgba(79,124,255,.06);border:1px solid rgba(79,124,255,.15);border-radius:9px;">
+          <i class="fas fa-info-circle" style="color:var(--ac);"></i>
+          Keys entered here are sent to your Railway backend as a fallback if the server-side env vars aren't set.
+          For best security, set <code style="background:rgba(255,255,255,.07);padding:1px 5px;border-radius:4px;">ANTHROPIC_API_KEY</code> and <code style="background:rgba(255,255,255,.07);padding:1px 5px;border-radius:4px;">RUNWAY_API_KEY</code> directly in Railway instead.
+        </div>
+        <div class="field"><label>Claude API Key (Anthropic)</label><input type="password" id="claudeApiKey" placeholder="sk-ant-api03-..."/><div style="font-size:11px;color:var(--mu);margin-top:5px;">Get yours at <a href="https://console.anthropic.com" target="_blank" style="color:var(--ac);text-decoration:none;">console.anthropic.com</a></div></div>
+        <div class="field"><label>ElevenLabs API Key</label><input type="password" id="elevenApiKey" placeholder="Your ElevenLabs key"/><div style="font-size:11px;color:var(--mu);margin-top:5px;">Get yours at <a href="https://elevenlabs.io/app/settings/api-keys" target="_blank" style="color:var(--ac);text-decoration:none;">elevenlabs.io</a></div></div>
+        <div class="field"><label>Runway API Key (fallback)</label><input type="password" id="runwayApiKey" placeholder="key_..."/><div style="font-size:11px;color:var(--mu);margin-top:5px;">Get yours at <a href="https://app.runwayml.com/account/api-keys" target="_blank" style="color:var(--ac);text-decoration:none;">app.runwayml.com</a></div></div>
+        <button class="btn p" onclick="saveSettings()"><i class="fas fa-save"></i> Save All Keys</button>
+      </div>
+    </div>
+
+    <!-- SETTINGS -->
+    <div id="pg-settings" class="page">
+      <div class="page-hero"><h2>Settings</h2><p>Configure platform preferences.</p></div>
+      <div class="set-sec">
+        <h3>Voice Settings</h3>
+        <div class="field"><label>Default ElevenLabs Voice</label>
+          <select id="voiceSelect">
+            <option value="21m00Tcm4TlvDq8ikWAM">Rachel (Female, warm)</option>
+            <option value="AZnzlk1XvdvUeBnXmlld">Domi (Female, energetic)</option>
+            <option value="EXAVITQu4vr4xnSDxMaL">Bella (Female, soft)</option>
+            <option value="ErXwobaYiN019PkySvjV">Antoni (Male, professional)</option>
+            <option value="TxGEqnHWrfWFTfGW9XjX">Josh (Male, deep)</option>
+            <option value="pNInz6obpgDQGcFmaJgB">Adam (Male, classic)</option>
+          </select>
+        </div>
+        <button class="btn p" onclick="saveSettings()"><i class="fas fa-save"></i> Save Settings</button>
+      </div>
+    </div>
+
+  </main>
+</div><!-- /app-body -->
+
+
+<!-- FULLSCREEN CAROUSEL -->
+<div id="deckCarousel">
+  <div class="car-topbar">
+    <div class="car-topbar-info">
+      <h3 id="carTitle">Deck Title</h3>
+      <p id="carSub">Subtitle</p>
+    </div>
+    <div class="car-acts">
+      <button class="btn" onclick="genAllVideos()"><i class="fas fa-film"></i> Gen Videos</button>
+      <button class="btn" onclick="exportCar()"><i class="fas fa-download"></i> Export</button>
+      <button class="btn" onclick="doAssessment()"><i class="fas fa-clipboard-question"></i> Assessment</button>
+      <button class="btn p" onclick="startPlayback()"><i class="fas fa-play"></i> Play</button>
+      <button class="btn" onclick="closeCarousel()"><i class="fas fa-xmark"></i> Close</button>
+    </div>
+  </div>
+
+  <div class="car-body">
+    <div class="car-track-outer">
+      <button class="car-arrow prev" id="carPrev" onclick="carNav(-1)"><i class="fas fa-chevron-left"></i></button>
+      <!-- track — JS renders .car-card elements inside here -->
+      <div class="car-track" id="carTrack"></div>
+      <button class="car-arrow next" id="carNext" onclick="carNav(1)"><i class="fas fa-chevron-right"></i></button>
+    </div>
+  </div>
+
+  <div class="car-dots" id="carDots"></div>
+</div>
+
+
+<!-- EDIT SLIDE MODAL -->
+<div id="editModal" class="edit-modal-ov" style="display:none;">
+  <div class="edit-modal">
+    <h3>✏️ Edit Slide</h3>
+    <div class="edit-field">
+      <label>📝 Content / Body Text</label>
+      <textarea id="editContent" rows="3"></textarea>
+    </div>
+    <div class="edit-field">
+      <label>🎙️ Narration (voiceover script)</label>
+      <textarea id="editNarration" rows="3"></textarea>
+      <div class="edit-regen-row">
+        <button class="edit-regen-btn" id="regenAudioBtn" onclick="regenSlideAudio()"><i class="fas fa-microphone"></i> Regenerate Audio</button>
+      </div>
+    </div>
+    <div class="edit-field">
+      <label>🖼️ Image Prompt</label>
+      <textarea id="editImagePrompt" rows="2"></textarea>
+      <div class="edit-regen-row">
+        <button class="edit-regen-btn" id="regenImgBtn" onclick="regenSlideImage()"><i class="fas fa-image"></i> Regenerate Image</button>
+      </div>
+    </div>
+    <div class="edit-field">
+      <label>🎬 Video Prompt</label>
+      <textarea id="editVideoPrompt" rows="2"></textarea>
+      <div class="edit-regen-row">
+        <button class="edit-regen-btn" id="regenVidBtn" onclick="regenSlideVideo()"><i class="fas fa-film"></i> Regenerate Video</button>
+      </div>
+    </div>
+    <div class="edit-actions">
+      <button class="btn" onclick="closeEditModal()">Cancel</button>
+      <button class="btn p" onclick="saveSlideEdit()"><i class="fas fa-save"></i> Save Changes</button>
+    </div>
+  </div>
+</div>
+
+<!-- PLAYBACK OVERLAY -->
+<div id="playbackOverlay">
+  <video id="pbMedia" autoplay muted loop style="display:none;"></video>
+  <img id="pbMediaImg" style="display:none;" alt=""/>
+  <div id="pbGradient"></div>
+  <button class="pb-btn" id="pbCloseBtn" onclick="stopPlayback()"><i class="fas fa-xmark"></i></button>
+  <div id="pbContent">
+    <div id="pbSlideNum"></div>
+    <div id="pbTitle"></div>
+    <div id="pbBody"></div>
+    <div id="pbCaption"></div>
+    <div id="pbProgress"><div id="pbProgressBar"></div></div>
+    <div id="pbControls">
+      <button class="pb-btn" onclick="pbNav(-1)"><i class="fas fa-backward-step"></i></button>
+      <button class="pb-btn" id="pbPlayPause" onclick="pbTogglePause()"><i class="fas fa-pause"></i></button>
+      <button class="pb-btn" onclick="pbNav(1)"><i class="fas fa-forward-step"></i></button>
+    </div>
+  </div>
+</div>
+
+<!-- GENERATE MODAL -->
+<div id="genModal" style="display:none;" class="modal-ov">
+  <div class="modal">
+    <h3>🤖 AI Course Generator</h3>
+    <p>Describe your course and Claude will build it automatically.</p>
+    <div class="chips">
+      <span class="chip" onclick="setP('Workplace safety training covering hazard identification, PPE, emergency procedures.')">🦺 Safety</span>
+      <span class="chip" onclick="setP('GDPR compliance training covering regulations, best practices, and incident response.')">⚖️ Compliance</span>
+      <span class="chip" onclick="setP('Customer service excellence covering active listening, difficult customers, communication.')">🤝 Customer Service</span>
+      <span class="chip" onclick="setP('Sales training covering prospecting, objection handling, closing strategies.')">💼 Sales</span>
+      <span class="chip" onclick="setP('Leadership training covering team communication, conflict resolution, performance management.')">👔 Leadership</span>
+      <span class="chip" onclick="setP('Cybersecurity awareness covering phishing, password safety, data handling.')">🔐 Cybersecurity</span>
+    </div>
+    <div class="field"><label>Course Description</label><textarea id="genPrompt" rows="4" placeholder="Describe your topic, audience, and learning objectives..."></textarea></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <div class="field" style="flex:1;min-width:100px;margin:0;"><label>Slides</label><select id="genSlides"><option value="8">8</option><option value="10" selected>10</option><option value="12">12</option><option value="15">15</option></select></div>
+      <div class="field" style="flex:1;min-width:120px;margin:0;"><label>Category</label><select id="genCat"><option value="safety">Safety</option><option value="technical">Technical</option><option value="business" selected>Business</option></select></div>
+      <div class="field" style="flex:1;min-width:120px;margin:0;"><label>Videos</label><select id="genVid"><option value="yes" selected>Yes — Runway</option><option value="no">No</option></select></div>
+    </div>
+    <!-- Progress UI (hidden until job starts) -->
+    <div id="genProgress" style="display:none;margin-top:16px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+        <span id="genProgressMsg" style="font-size:13px;color:var(--mu);">Starting...</span>
+        <span id="genProgressPct" style="font-size:12px;font-weight:700;color:var(--ac);">0%</span>
+      </div>
+      <div style="height:5px;background:rgba(255,255,255,.07);border-radius:999px;overflow:hidden;">
+        <div id="genProgressBar" style="height:100%;border-radius:999px;background:linear-gradient(90deg,var(--ac),var(--ac2));transition:width .4s ease;width:0%;"></div>
+      </div>
+      <div id="genProgressStep" style="font-size:11px;color:var(--mu);margin-top:5px;text-transform:uppercase;letter-spacing:.8px;"></div>
+    </div>
+    <div class="modal-acts">
+      <button class="btn" id="genCancelBtn" onclick="closeGenModal()">Cancel</button>
+      <button class="btn p" id="genBtn" onclick="runGen()"><i class="fas fa-wand-magic-sparkles"></i> Generate</button>
+    </div>
+  </div>
+</div>
+
+<div id="sf"><span id="sft"></span></div>
+
+
+<!-- SCRIPTS -->
+<script src="assessment-engine.js"></script>
+<script src="assessment-builder.js"></script>
+<script src="app.js"></script>
+
+<script>
+// NAV
+function nav(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.sb-item').forEach(i => i.classList.remove('active'));
+  const pg = document.getElementById('pg-' + id);
+  if (pg) pg.classList.add('active');
+  if (el) el.classList.add('active');
+}
+
+// FLASH
+function flash(msg, type='') {
+  const el = document.getElementById('sf');
+  document.getElementById('sft').textContent = msg;
+  el.className = 'show ' + type;
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.className = '', 3200);
+}
+
+// SETTINGS
+function getSettings() { return JSON.parse(localStorage.getItem('csSettings') || '{}'); }
+function saveSettings() {
+  const s = getSettings();
+  const ck  = document.getElementById('claudeApiKey');
+  const ek  = document.getElementById('elevenApiKey');
+  const rk  = document.getElementById('runwayApiKey');
+  const ru  = document.getElementById('railwayUrl');
+  const vs  = document.getElementById('voiceSelect');
+  if (ck?.value.trim())  s.claudeApiKey  = ck.value.trim();
+  if (ek?.value.trim())  s.elevenApiKey  = ek.value.trim();
+  if (rk?.value.trim())  s.runwayApiKey  = rk.value.trim();
+  if (ru)                s.railwayUrl    = ru.value.trim().replace(/\/+$/, '');
+  if (vs)                s.voiceId       = vs.value;
+  localStorage.setItem('csSettings', JSON.stringify(s));
+  flash('✅ Keys saved!', 'ok');
+}
+function loadSettings() {
+  const s   = getSettings();
+  const ck  = document.getElementById('claudeApiKey');
+  const ek  = document.getElementById('elevenApiKey');
+  const rk  = document.getElementById('runwayApiKey');
+  const ru  = document.getElementById('railwayUrl');
+  const vs  = document.getElementById('voiceSelect');
+  if (ck && s.claudeApiKey)  ck.value = s.claudeApiKey;
+  if (ek && s.elevenApiKey)  ek.value = s.elevenApiKey;
+  if (rk && s.runwayApiKey)  rk.value = s.runwayApiKey;
+  if (ru && s.railwayUrl)    ru.value = s.railwayUrl;
+  if (vs && s.voiceId)       vs.value = s.voiceId;
+}
+async function testRailway() {
+  const s   = getSettings();
+  const url = s.railwayUrl;
+  const el  = document.getElementById('railwayStatus');
+  if (!url) { el.innerHTML = '<span style="color:#ef4444;">⚠️ Enter a URL first</span>'; return; }
+  el.innerHTML = '<span style="color:var(--mu);">Testing...</span>';
+  try {
+    const res = await fetch(url + '/health', { signal: AbortSignal.timeout(6000) });
+    const d   = await res.json();
+    if (d.ok) el.innerHTML = '<span style="color:#4ade80;">✅ Connected — ' + (d.jobs_in_memory||0) + ' jobs in memory</span>';
+    else      el.innerHTML = '<span style="color:#ef4444;">⚠️ Unexpected response</span>';
+  } catch(e) {
+    el.innerHTML = '<span style="color:#ef4444;">❌ ' + e.message + '</span>';
+  }
+}
+
+// GENERATE
+const BG_MAP = {
+  office:    'https://images.unsplash.com/photo-1497366216548-37526070297c?w=1200&h=700&fit=crop',
+  warehouse: 'https://images.unsplash.com/photo-1586528116311-ad8dd3c8310d?w=1200&h=700&fit=crop',
+  outdoor:   'https://images.unsplash.com/photo-1504711434969-e33886168f5c?w=1200&h=700&fit=crop',
+  classroom: 'https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=1200&h=700&fit=crop',
+  lab:       'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?w=1200&h=700&fit=crop',
+};
+
+function normSlide(sl, i, total) {
+  return {
+    id: i+1,
+    heading:         sl.heading || sl.title  || 'Slide '+(i+1),
+    content:         sl.content || sl.description || '',
+    narration:       sl.narration || '',
+    audioUrl:        sl.audioUrl || null,
+    type:            sl.type    || 'content',
+    backgroundImage: sl.generatedImageUrl || BG_MAP[sl.backgroundImage] || BG_MAP[sl.scene?.background] || BG_MAP.office,
+    hasVideo:        sl.hasVideo || sl.type === 'video',
+    videoUrl:        sl.videoUrl || null,
+    videoStatus:     sl.videoUrl ? 'SUCCEEDED' : 'idle',
+    videoProgress:   sl.videoUrl ? 100 : 0,
+    runwayTaskId:    null,
+    scene:           sl.scene   || null,
+    bullets:         sl.bullets || [],
+    question:        sl.question || null,
+    options:         sl.options  || null,
+    feedback:        sl.feedback || null,
+  };
+}
+
+function setGenProgress(pct, msg, step) {
+  const bar  = document.getElementById('genProgressBar');
+  const msgEl = document.getElementById('genProgressMsg');
+  const pctEl = document.getElementById('genProgressPct');
+  const stepEl = document.getElementById('genProgressStep');
+  if (bar)   bar.style.width  = pct + '%';
+  if (msgEl) msgEl.textContent = msg  || '';
+  if (pctEl) pctEl.textContent = pct  + '%';
+  if (stepEl) stepEl.textContent = step || '';
+}
+
+function showGenerateModal() { document.getElementById('genModal').style.display = 'flex'; }
+function closeGenModal() {
+  document.getElementById('genModal').style.display = 'none';
+  document.getElementById('genProgress').style.display = 'none';
+  setGenProgress(0,'','');
+}
+function setP(t) { document.getElementById('genPrompt').value = t; }
+
+let _pollTimer = null;
+
+async function runGen() {
+  const prompt = document.getElementById('genPrompt').value.trim();
+  if (!prompt) { flash('⚠️ Enter a prompt', 'err'); return; }
+  const s   = getSettings();
+  const cat = document.getElementById('genCat').value;
+  const btn = document.getElementById('genBtn');
+
+  btn.disabled = true;
+  btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
+  document.getElementById('genProgress').style.display = 'block';
+  setGenProgress(5, 'Starting job...', '');
+
+  try {
+    // ── Use Railway backend if configured ────────────────
+    if (s.railwayUrl) {
+      await runGenRailway(prompt, s, cat, btn);
+    } else {
+      await runGenNetlify(prompt, s, cat, btn);
+    }
+  } catch(e) {
+    flash('❌ '+e.message, 'err');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate';
+  }
+}
+
+async function runGenNetlify(prompt, s, cat, btn) {
+  // Legacy path — single synchronous Netlify function call
+  if (!s.claudeApiKey) throw new Error('Add Claude API key in API Keys first');
+  setGenProgress(20, 'Calling Claude (Netlify function)...', 'claude');
+  const res = await fetch('/.netlify/functions/generate-course', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      prompt,
+      slideCount:    parseInt(document.getElementById('genSlides').value),
+      includeVideos: document.getElementById('genVid').value === 'yes',
+      apiKey:        s.claudeApiKey
+    })
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Netlify function failed');
+  setGenProgress(100, '✅ Complete', 'done');
+  finishGen(data, cat, btn);
+}
+
+async function runGenRailway(prompt, s, cat, btn) {
+  // New path — Railway backend with job polling, no timeouts
+  setGenProgress(5, 'Submitting job to Railway...', 'queued');
+
+  const res = await fetch(s.railwayUrl + '/api/generate-course', {
+    method:  'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({
+      prompt,
+      slideCount:    parseInt(document.getElementById('genSlides').value),
+      includeVideos: document.getElementById('genVid').value === 'yes',
+      category:      cat,
+      claudeApiKey:     s.claudeApiKey || '',
+      runwayApiKey:     s.runwayApiKey || '',
+      elevenLabsApiKey: s.elevenApiKey || '',
+    })
+  });
+
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error('Railway error: ' + err.slice(0,200));
+  }
+
+  const { job_id } = await res.json();
+  if (!job_id) throw new Error('Railway returned no job_id');
+
+  flash('🚂 Job started — polling...', '');
+
+  // Poll until done
+  await new Promise((resolve, reject) => {
+    _pollTimer = setInterval(async () => {
+      try {
+        const pr   = await fetch(s.railwayUrl + '/api/job/' + job_id);
+
+        // Stop polling if job not found (404)
+        if (pr.status === 404) {
+          clearInterval(_pollTimer);
+          _pollTimer = null;
+          reject(new Error('Job not found on Railway backend'));
+          return;
+        }
+
+        const job  = await pr.json();
+        const pct  = job.progress || 0;
+        const msg  = job.message  || 'Working...';
+        const step = job.step     || '';
+
+        setGenProgress(pct, msg, step);
+
+        if (job.status === 'complete') {
+          clearInterval(_pollTimer);
+          _pollTimer = null;
+          finishGen(job.result?.course, cat, btn);
+          resolve();
+        } else if (job.status === 'error') {
+          clearInterval(_pollTimer);
+          _pollTimer = null;
+          reject(new Error(job.error || 'Job failed'));
+        }
+      } catch(e) {
+        // transient network error — keep polling
+        console.warn('Poll error:', e.message);
+      }
+    }, 1500);
+  });
+}
+
+function finishGen(data, cat, btn) {
+  if (!data || !data.slides) {
+    flash('⚠️ No course data returned', 'err');
+    btn.disabled = false;
+    btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate';
+    return;
+  }
+  const deck = {
+    id:         'ai-' + Date.now(),
+    title:      data.title       || 'AI Course',
+    subtitle:   data.description || 'AI-generated',
+    slideCount: data.slides.length,
+    slides:     data.slides.map((sl, i) => normSlide(sl, i, data.slides.length)),
+  };
+  if (!courseDecks[cat]) courseDecks[cat] = [];
+  courseDecks[cat].push(deck);
+  saveDecksToStorage();
+  closeGenModal();
+  flash(`✅ "${deck.title}" — ${deck.slideCount} slides`, 'ok');
+  openCarousel(cat, courseDecks[cat].length - 1);
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-wand-magic-sparkles"></i> Generate';
+}
+
+function saveDecksToStorage() {
+  try {
+    const aiDecks = {};
+    for (const cat in courseDecks) {
+      const filtered = courseDecks[cat].filter(d => d.id && d.id.startsWith('ai-'));
+      // Strip base64 audio before saving — too large for localStorage
+      aiDecks[cat] = filtered.map(deck => ({
+        ...deck,
+        slides: deck.slides.map(sl => ({...sl, audioUrl: null}))
+      }));
+    }
+    localStorage.setItem('csAiDecks', JSON.stringify(aiDecks));
+    console.log('✅ Decks saved to storage');
+  } catch(e) { console.warn('Could not save decks:', e); }
+}
+
+function loadDecksFromStorage() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('csAiDecks') || '{}');
+    for (const cat in saved) {
+      if (!courseDecks[cat]) courseDecks[cat] = [];
+      // Add saved decks that aren't already present
+      for (const deck of saved[cat]) {
+        if (!courseDecks[cat].find(d => d.id === deck.id)) {
+          courseDecks[cat].push(deck);
+        }
+      }
+    }
+    console.log('✅ Loaded saved AI decks from storage');
+  } catch(e) { console.warn('Could not load decks:', e); }
+}
+
+function addDeckToCategory(cat) {
+  const t = prompt('New deck title:');
+  if (!t) return;
+  if (!courseDecks[cat]) courseDecks[cat]=[];
+  courseDecks[cat].push({id:'c-'+Date.now(),title:t,subtitle:'Custom deck',slideCount:0,slides:[]});
+  flash('✅ Added','ok');
+}
+
+// ── CAROUSEL ─────────────────────────────────────────────
+let _deck=null, _idx=0;
+const CARD_W = 420; // must match CSS flex-basis
+const CARD_GAP = 40; // margin*2 each side = 20px each side
+
+function slideHTML(sl, i) {
+  const media = sl.videoUrl
+    ? `<video style="width:100%;height:190px;object-fit:cover;display:block;" src="${sl.videoUrl}" controls></video>`
+    : sl.backgroundImage
+      ? `<img style="width:100%;height:190px;object-fit:cover;display:block;" src="${sl.backgroundImage}" alt=""/>`
+      : '';
+  const bullets = sl.bullets?.length ? `<ul class="car-bullets">${sl.bullets.map(b=>`<li>${b}</li>`).join('')}</ul>` : '';
+  const quiz = sl.question ? `<div class="car-quiz"><div class="ql">❓ Knowledge Check</div><div class="qt">${sl.question}</div>${(sl.options||[]).map(o=>`<div class="car-opt ${o.correct?'correct':''}">${o.text}</div>`).join('')}</div>` : '';
+  const narr = sl.narration ? `<div class="car-narration">"${sl.narration}"</div>` : '';
+  const audioPlayer = sl.audioUrl ? `<audio id="slide-audio-${sl.id}" src="${sl.audioUrl}" preload="auto" style="display:none;"></audio>` : '';
+  const vbtn = sl.hasVideo&&!sl.videoUrl ? `<div class="car-vbtn" id="vb${i}" onclick="genOneVid(${i})"><i class="fas fa-film"></i> Generate Runway Video</div>` : '';
+  const editBtn = `<div class="car-vbtn" onclick="openEditModal(${i})" style="margin-left:6px;border-color:rgba(168,85,247,.3);color:#a855f7;background:rgba(168,85,247,.08);"><i class="fas fa-pen"></i> Edit</div>`;
+  return audioPlayer + `${media}<div class="car-card-body"><div class="car-num">Slide ${sl.id} of ${_deck.slides.length}</div><div class="car-title">${sl.heading}</div><div class="car-content">${sl.content}</div>${bullets}${quiz}${narr}<div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">${vbtn}${editBtn}</div></div>`;
+}
+
+function buildTrack() {
+  if (!_deck) return;
+  const track = document.getElementById('carTrack');
+  track.innerHTML = _deck.slides.map((sl, i) =>
+    `<div class="car-card" id="card-${i}" onclick="goDot(${i})">${slideHTML(sl, i)}</div>`
+  ).join('');
+  applyTrackPos(false);
+  setTimeout(()=>playSlideAudio(0), 600);
+}
+
+function applyTrackPos(animate) {
+  if (!_deck) return;
+  const track = document.getElementById('carTrack');
+  const STEP = CARD_W + CARD_GAP;
+  // Centre the active card: offset = -(idx * STEP) + (track-outer-width/2 - CARD_W/2)
+  // track-outer is 460px, card is 420px → centering offset = (460-420)/2 = 20px
+  const offset = -((_idx) * STEP) + 20;
+  if (!animate) track.style.transition = 'none';
+  else track.style.transition = 'transform .42s cubic-bezier(.4,0,.2,1)';
+  track.style.transform = `translateX(${offset}px)`;
+
+  // Apply scale/opacity classes to each card
+  _deck.slides.forEach((_, i) => {
+    const card = document.getElementById('card-'+i);
+    if (!card) return;
+    const diff = Math.abs(i - _idx);
+    card.classList.remove('side','far');
+    if (diff === 1) card.classList.add('side');
+    else if (diff >= 2) card.classList.add('far');
+  });
+
+  // Update dots and arrows
+  document.querySelectorAll('.cdot-el').forEach((d,i)=>d.classList.toggle('active',i===_idx));
+  document.getElementById('carPrev').disabled = _idx===0;
+  document.getElementById('carNext').disabled = _idx===_deck.slides.length-1;
+}
+
+function openCarousel(cat, di) {
+  const deck = typeof courseDecks!=='undefined' ? courseDecks[cat]?.[di] : null;
+  if (!deck) { flash('Deck not found','err'); return; }
+  _deck=deck; _idx=0;
+  document.getElementById('carTitle').textContent = deck.title;
+  document.getElementById('carSub').textContent   = deck.subtitle;
+  buildDots();
+  buildTrack();
+  const el = document.getElementById('deckCarousel');
+  el.style.display='flex';
+  requestAnimationFrame(()=>requestAnimationFrame(()=>el.classList.add('open')));
+  if (typeof openDeck==='function') try { openDeck(cat,di); } catch(e) {}
+}
+
+function closeCarousel() {
+  const el = document.getElementById('deckCarousel');
+  el.classList.remove('open');
+  setTimeout(()=>{ el.style.display='none'; },380);
+}
+
+function buildDots() {
+  if (!_deck) return;
+  document.getElementById('carDots').innerHTML = _deck.slides.map((_,i)=>
+    `<div class="cdot-el ${i===_idx?'active':''}" onclick="goDot(${i})"></div>`
+  ).join('');
+}
+
+function playSlideAudio(idx) {
+  // Stop all playing audio first
+  document.querySelectorAll('audio[id^="slide-audio-"]').forEach(a => { a.pause(); a.currentTime = 0; });
+  if (!_deck || !_deck.slides[idx]) return;
+  const sl = _deck.slides[idx];
+  if (sl.audioUrl) {
+    const audio = document.getElementById('slide-audio-' + sl.id);
+    if (audio) { audio.volume = 0.85; audio.play().catch(()=>{}); }
+  }
+}
+
+function carNav(d) {
+  if (!_deck) return;
+  const n = _idx + d;
+  if (n >= 0 && n < _deck.slides.length) { _idx = n; applyTrackPos(true); setTimeout(()=>playSlideAudio(_idx), 400); }
+}
+function goDot(i) { _idx = i; applyTrackPos(true); setTimeout(()=>playSlideAudio(_idx), 400); }
+
+// re-render a single card's content (after video generates)
+function refreshCard(i) {
+  const card = document.getElementById('card-'+i);
+  if (card && _deck) card.innerHTML = slideHTML(_deck.slides[i], i);
+}
+
+async function genOneVid(si) {
+  if (!_deck) return;
+  const sl = _deck.slides[si];
+  const btn = document.getElementById('vb'+si);
+  if (btn) { btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Generating...'; }
+  try {
+    const s = getSettings();
+    const prompt = (typeof buildRunwayPromptFromSlide==='function' ? buildRunwayPromptFromSlide(sl,_deck) : `${sl.heading||'Training video'}. ${sl.content||'Professional workplace scene'}. Professional training video, cinematic quality.`).trim() || 'Professional training video, cinematic quality.';
+    console.log('Sending prompt to Runway via Railway:', prompt);
+
+    if (!s.railwayUrl) throw new Error('Railway URL not set in API Keys');
+
+    // Start video via Railway backend
+    const res = await fetch(s.railwayUrl + '/api/runway/start', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({promptText: prompt, duration: 5, ratio: '1280:720', model: 'gen4.5', runwayApiKey: s.runwayApiKey||''})
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || JSON.stringify(data));
+    flash('🎬 Polling Runway...','');
+    const start=Date.now();
+    while(Date.now()-start<300000){
+      await new Promise(r=>setTimeout(r,4000));
+      const poll = await fetch(s.railwayUrl + '/api/runway/status/' + encodeURIComponent(data.id), {
+        headers:{'Content-Type':'application/json'}
+      });
+      const task = await poll.json();
+      if(task.status==='SUCCEEDED'&&task.videoUrl){sl.videoUrl=task.videoUrl;sl.videoStatus='SUCCEEDED';flash('✅ Video ready!','ok');refreshCard(si);return;}
+      if(task.status==='FAILED'||task.status==='CANCELED') throw new Error('Runway '+task.status);
+    }
+    throw new Error('Runway timed out');
+  } catch(e) { flash('❌ '+e.message,'err'); if(btn)btn.innerHTML='<i class="fas fa-film"></i> Retry Video'; }
+}
+
+async function genAllVideos() {
+  if (!_deck) return;
+  const pending=_deck.slides.filter(s=>s.hasVideo&&!s.videoUrl);
+  if (!pending.length){flash('No pending video slides','');return;}
+  flash(`🎬 Queuing ${pending.length} video(s)...`,'');
+  for(const sl of pending){genOneVid(_deck.slides.indexOf(sl));await new Promise(r=>setTimeout(r,1200));}
+}
+
+function exportCar() {
+  if(!_deck)return;
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([JSON.stringify(_deck,null,2)],{type:'application/json'}));
+  a.download=(_deck.title||'deck').replace(/\s+/g,'-')+'.json';
+  a.click(); flash('✅ Exported','ok');
+}
+
+function doAssessment() { if(typeof AssessmentBuilder!=='undefined')AssessmentBuilder.open(_idx);else flash('Assessment builder not loaded','err'); }
+
+// ── SLIDE EDIT MODAL ─────────────────────────────────────────────────────────
+
+let _editIdx = null;
+
+function openEditModal(idx) {
+  if (!_deck) return;
+  _editIdx = idx;
+  const sl = _deck.slides[idx];
+  document.getElementById('editContent').value    = sl.content || '';
+  document.getElementById('editNarration').value  = sl.narration || '';
+  document.getElementById('editImagePrompt').value = sl.imagePrompt || sl.heading + '. ' + (sl.content||'') + ' Professional environment, cinematic lighting.';
+  document.getElementById('editVideoPrompt').value = sl.videoPrompt || sl.scene?.description || sl.heading + '. ' + (sl.content||'') + ' Cinematic training video.';
+  document.getElementById('editModal').style.display = 'flex';
+}
+
+function closeEditModal() {
+  document.getElementById('editModal').style.display = 'none';
+  _editIdx = null;
+}
+
+function saveSlideEdit() {
+  if (_editIdx === null || !_deck) return;
+  const sl = _deck.slides[_editIdx];
+  sl.content      = document.getElementById('editContent').value.trim();
+  sl.narration    = document.getElementById('editNarration').value.trim();
+  sl.imagePrompt  = document.getElementById('editImagePrompt').value.trim();
+  sl.videoPrompt  = document.getElementById('editVideoPrompt').value.trim();
+  refreshCard(_editIdx);
+  closeEditModal();
+  flash('✅ Slide updated', 'ok');
+}
+
+async function regenSlideAudio() {
+  if (_editIdx === null || !_deck) return;
+  const sl = _deck.slides[_editIdx];
+  const narration = document.getElementById('editNarration').value.trim();
+  if (!narration) { flash('⚠️ Enter narration text first', 'err'); return; }
+  const s = getSettings();
+  if (!s.railwayUrl) { flash('⚠️ Railway URL not set', 'err'); return; }
+  const btn = document.getElementById('regenAudioBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+  try {
+    const res = await fetch(s.railwayUrl + '/api/slide/audio', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({narration, elevenLabsApiKey: s.elevenApiKey || ''})
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Audio failed');
+    sl.narration = narration;
+    sl.audioUrl = data.audioUrl;
+    refreshCard(_editIdx);
+    flash('✅ Audio regenerated', 'ok');
+  } catch(e) { flash('❌ ' + e.message, 'err'); }
+  finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-microphone"></i> Regenerate Audio'; }
+}
+
+async function regenSlideImage() {
+  if (_editIdx === null || !_deck) return;
+  const sl = _deck.slides[_editIdx];
+  const prompt = document.getElementById('editImagePrompt').value.trim();
+  if (!prompt) { flash('⚠️ Enter image prompt first', 'err'); return; }
+  const s = getSettings();
+  if (!s.railwayUrl) { flash('⚠️ Railway URL not set', 'err'); return; }
+  const btn = document.getElementById('regenImgBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+  try {
+    const res = await fetch(s.railwayUrl + '/api/slide/image', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({prompt, runwayApiKey: s.runwayApiKey || ''})
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Image failed');
+    sl.imagePrompt = prompt;
+    sl.generatedImageUrl = data.imageUrl;
+    sl.backgroundImage = data.imageUrl;
+    refreshCard(_editIdx);
+    flash('✅ Image regenerated', 'ok');
+  } catch(e) { flash('❌ ' + e.message, 'err'); }
+  finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-image"></i> Regenerate Image'; }
+}
+
+async function regenSlideVideo() {
+  if (_editIdx === null || !_deck) return;
+  const sl = _deck.slides[_editIdx];
+  const prompt = document.getElementById('editVideoPrompt').value.trim();
+  if (!prompt) { flash('⚠️ Enter video prompt first', 'err'); return; }
+  const s = getSettings();
+  if (!s.railwayUrl) { flash('⚠️ Railway URL not set', 'err'); return; }
+  const btn = document.getElementById('regenVidBtn');
+  btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Starting...';
+  try {
+    const res = await fetch(s.railwayUrl + '/api/runway/start', {
+      method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({promptText: prompt, duration: 5, ratio: '1280:720', model: 'gen4.5', runwayApiKey: s.runwayApiKey || ''})
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Video start failed');
+    flash('🎬 Polling Runway...', '');
+    const start = Date.now();
+    while (Date.now() - start < 300000) {
+      await new Promise(r => setTimeout(r, 4000));
+      const poll = await fetch(s.railwayUrl + '/api/runway/status/' + encodeURIComponent(data.id));
+      const task = await poll.json();
+      if (task.status === 'SUCCEEDED' && task.videoUrl) {
+        sl.videoPrompt = prompt;
+        sl.videoUrl = task.videoUrl;
+        sl.videoStatus = 'SUCCEEDED';
+        sl.hasVideo = true;
+        refreshCard(_editIdx);
+        flash('✅ Video regenerated', 'ok');
+        btn.disabled = false; btn.innerHTML = '<i class="fas fa-film"></i> Regenerate Video';
+        return;
+      }
+      if (task.status === 'FAILED' || task.status === 'CANCELED') throw new Error('Runway ' + task.status);
+    }
+    throw new Error('Runway timed out');
+  } catch(e) { flash('❌ ' + e.message, 'err'); }
+  finally { btn.disabled = false; btn.innerHTML = '<i class="fas fa-film"></i> Regenerate Video'; }
+}
+
+// ── PLAYBACK ENGINE ──────────────────────────────────────────────────────────
+
+let _pb = { active: false, idx: 0, paused: false, audio: null, timer: null };
+
+function startPlayback() {
+  if (!_deck || !_deck.slides.length) return;
+  _pb.active = true;
+  _pb.idx = _idx;
+  _pb.paused = false;
+  document.getElementById('playbackOverlay').classList.add('active');
+  pbShowSlide(_pb.idx);
+}
+
+function stopPlayback() {
+  _pb.active = false;
+  if (_pb.audio) { _pb.audio.pause(); _pb.audio = null; }
+  if (_pb.timer) { clearTimeout(_pb.timer); _pb.timer = null; }
+  document.getElementById('playbackOverlay').classList.remove('active');
+  const vid = document.getElementById('pbMedia');
+  vid.pause(); vid.src = '';
+}
+
+function pbTogglePause() {
+  _pb.paused = !_pb.paused;
+  const icon = document.getElementById('pbPlayPause').querySelector('i');
+  if (_pb.paused) {
+    icon.className = 'fas fa-play';
+    if (_pb.audio) _pb.audio.pause();
+    if (_pb.timer) { clearTimeout(_pb.timer); _pb.timer = null; }
+  } else {
+    icon.className = 'fas fa-pause';
+    if (_pb.audio) _pb.audio.play().catch(()=>{});
+    else pbAdvanceAuto();
+  }
+}
+
+function pbNav(d) {
+  if (_pb.audio) { _pb.audio.pause(); _pb.audio = null; }
+  if (_pb.timer) { clearTimeout(_pb.timer); _pb.timer = null; }
+  const n = _pb.idx + d;
+  if (n >= 0 && n < _deck.slides.length) { _pb.idx = n; pbShowSlide(_pb.idx); }
+}
+
+function pbShowSlide(idx) {
+  if (!_deck || !_deck.slides[idx]) return;
+  const sl = _deck.slides[idx];
+  const total = _deck.slides.length;
+
+  // Update text
+  document.getElementById('pbSlideNum').textContent = `Slide ${idx + 1} of ${total}`;
+  document.getElementById('pbTitle').textContent = sl.heading || '';
+  document.getElementById('pbBody').textContent = sl.content || '';
+  document.getElementById('pbCaption').textContent = '';
+  document.getElementById('pbProgressBar').style.width = ((idx / (total - 1)) * 100) + '%';
+
+  // Background media
+  const vid = document.getElementById('pbMedia');
+  const img = document.getElementById('pbMediaImg');
+
+  if (sl.videoUrl) {
+    vid.src = sl.videoUrl;
+    vid.style.display = 'block';
+    img.style.display = 'none';
+    vid.play().catch(()=>{});
+  } else if (sl.backgroundImage || sl.generatedImageUrl) {
+    img.src = sl.generatedImageUrl || sl.backgroundImage;
+    img.style.display = 'block';
+    vid.style.display = 'none';
+    vid.src = '';
+  } else {
+    vid.style.display = 'none';
+    img.style.display = 'none';
+  }
+
+  // Play audio with word-by-word caption simulation
+  if (_pb.audio) { _pb.audio.pause(); _pb.audio = null; }
+  if (_pb.timer) { clearTimeout(_pb.timer); _pb.timer = null; }
+
+  if (sl.audioUrl && !_pb.paused) {
+    const audio = new Audio(sl.audioUrl);
+    _pb.audio = audio;
+    audio.volume = 0.9;
+
+    // Simulate word-by-word captions
+    const words = (sl.narration || '').split(' ');
+    audio.addEventListener('loadedmetadata', () => {
+      const dur = audio.duration || 5;
+      const interval = dur / Math.max(words.length, 1);
+      let wi = 0;
+      const cap = document.getElementById('pbCaption');
+      const wordTimer = setInterval(() => {
+        if (wi < words.length) {
+          cap.textContent = words.slice(0, wi + 1).join(' ');
+          wi++;
+        } else {
+          clearInterval(wordTimer);
+        }
+      }, interval * 1000);
+      audio.addEventListener('ended', () => {
+        clearInterval(wordTimer);
+        pbAdvanceAuto();
+      });
+    });
+
+    audio.play().catch(() => pbAdvanceAuto());
+  } else if (!_pb.paused) {
+    // No audio — auto advance after 4 seconds
+    pbAdvanceAuto(4000);
+  }
+}
+
+function pbAdvanceAuto(delay) {
+  if (_pb.paused) return;
+  const wait = delay || 1000;
+  _pb.timer = setTimeout(() => {
+    if (_pb.paused) return;
+    const n = _pb.idx + 1;
+    if (n < _deck.slides.length) { _pb.idx = n; pbShowSlide(_pb.idx); }
+    else stopPlayback();
+  }, wait);
+}
+
+// RUNWAY PAGE
+async function runRunwayPage() {
+  const prompt=document.getElementById('rwPrompt').value.trim();
+  if(!prompt){flash('⚠️ Enter a prompt','err');return;}
+  const s=getSettings();
+  if(!s.railwayUrl){flash('⚠️ Set Railway URL in API Keys first','err');return;}
+  const btn=document.getElementById('rwBtn');
+  const st=document.getElementById('rwStatus');
+  const vd=document.getElementById('rwResult');
+  btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Creating...';
+  st.style.display='block';st.textContent='⏳ Sending to Railway...';vd.style.display='none';
+  try {
+    const res=await fetch(s.railwayUrl+'/api/runway/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({promptText:prompt,duration:Number(document.getElementById('rwDuration').value),ratio:document.getElementById('rwRatio').value,model:document.getElementById('rwModel').value.trim()||'gen4.5',runwayApiKey:(s.runwayApiKey||'')})});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error||JSON.stringify(data.detail||data));
+    st.textContent=`⏳ Task: ${data.id} — polling...`;
+    const start=Date.now();
+    while(Date.now()-start<300000){
+      await new Promise(r=>setTimeout(r,4000));
+      const poll=await fetch(s.railwayUrl+'/api/runway/status/'+encodeURIComponent(data.id));
+      const task=await poll.json();
+      st.textContent=`🎬 Status: ${task.status}`;
+      if(task.status==='SUCCEEDED'&&task.videoUrl){vd.src=task.videoUrl;vd.style.display='block';vd.load();st.textContent='✅ Ready!';flash('✅ Video generated!','ok');break;}
+      if(task.status==='FAILED'||task.status==='CANCELED') throw new Error('Runway '+task.status);
+    }
+  } catch(e){st.textContent='❌ '+e.message;flash('❌ '+e.message,'err');}
+  finally{btn.disabled=false;btn.innerHTML='<i class="fas fa-film"></i> Generate Video';}
+}
+
+// KEYBOARD
+document.addEventListener('keydown',e=>{
+  if(document.getElementById('deckCarousel').classList.contains('open')){
+    if(e.key==='ArrowRight')carNav(1);
+    if(e.key==='ArrowLeft') carNav(-1);
+    if(e.key==='Escape')    closeCarousel();
+  }
+});
+
+// BOOT
+document.addEventListener('DOMContentLoaded',()=>{
+  if(typeof init==='function')init();
+  loadSettings();
+  loadDecksFromStorage();
+});
+</script>
+
+</body>
+</html>

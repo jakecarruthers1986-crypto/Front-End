@@ -956,20 +956,22 @@ function doAssessment() { if(typeof AssessmentBuilder!=='undefined')AssessmentBu
 async function runRunwayPage() {
   const prompt=document.getElementById('rwPrompt').value.trim();
   if(!prompt){flash('⚠️ Enter a prompt','err');return;}
+  const s=getSettings();
+  if(!s.railwayUrl){flash('⚠️ Set Railway URL in API Keys first','err');return;}
   const btn=document.getElementById('rwBtn');
   const st=document.getElementById('rwStatus');
   const vd=document.getElementById('rwResult');
   btn.disabled=true;btn.innerHTML='<i class="fas fa-spinner fa-spin"></i> Creating...';
-  st.style.display='block';st.textContent='⏳ Sending to Runway...';vd.style.display='none';
+  st.style.display='block';st.textContent='⏳ Sending to Railway...';vd.style.display='none';
   try {
-    const res=await fetch('/.netlify/functions/generate-runway-video',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({prompt,duration:Number(document.getElementById('rwDuration').value),aspectRatio:document.getElementById('rwRatio').value,model:document.getElementById('rwModel').value.trim()||'gen4.5',runwayApiKey:(getSettings().runwayApiKey||'')})});
+    const res=await fetch(s.railwayUrl+'/api/runway/start',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({promptText:prompt,duration:Number(document.getElementById('rwDuration').value),ratio:document.getElementById('rwRatio').value,model:document.getElementById('rwModel').value.trim()||'gen4.5',runwayApiKey:(s.runwayApiKey||'')})});
     const data=await res.json();
-    if(!res.ok) throw new Error(data.error||data.hint||JSON.stringify(data.runwayError||data));
+    if(!res.ok) throw new Error(data.error||JSON.stringify(data.detail||data));
     st.textContent=`⏳ Task: ${data.id} — polling...`;
     const start=Date.now();
-    while(Date.now()-start<240000){
-      await new Promise(r=>setTimeout(r,3000));
-      const rk=getSettings().runwayApiKey||''; const poll=await fetch(`/.netlify/functions/get-runway-task?id=${encodeURIComponent(data.id)}&runwayApiKey=${encodeURIComponent(rk)}`);
+    while(Date.now()-start<300000){
+      await new Promise(r=>setTimeout(r,4000));
+      const poll=await fetch(s.railwayUrl+'/api/runway/status/'+encodeURIComponent(data.id));
       const task=await poll.json();
       st.textContent=`🎬 Status: ${task.status}`;
       if(task.status==='SUCCEEDED'&&task.videoUrl){vd.src=task.videoUrl;vd.style.display='block';vd.load();st.textContent='✅ Ready!';flash('✅ Video generated!','ok');break;}
